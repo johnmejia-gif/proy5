@@ -27,13 +27,16 @@
 <p>{{tars}}</p>
 -->
   {% for tarjeta in tars %}
+    <h2>Club: {{tarjeta[4]}}</h2>
     <form class="tarjeta" action="{{url_for('tarjetafirmada')}}" method="POST">
       <input type="hidden" name="fec" value="{{tarjeta[0]}}">
-      <input type="hidden" name="co" value="{{tarjeta[1]}}">
-      <input type="hidden" name="hora" value="{{tarjeta[24]}}">
+      <input type="hidden" name="co" value="{{tarjeta[2]}}">
+      <input type="hidden" name="hora" value="{{tarjeta[1]}}">
       <p>{{tarjeta[3]}}</p>
-      <p>Fecha: {{tarjeta[0]}}, Hora de juego: {{tarjeta[24]}} </p>
-      <p>Id del jugador: {{tarjeta[1]}}</p>
+      <p>Fecha: {{tarjeta[0]}}, Hora de juego: {{tarjeta[1]}} </p>
+      <p>Id del jugador: {{tarjeta[2]}}</p>
+      <br>
+      <hr>
       <br>
       <div class="contenedor_tarjeta">
         <table class="tabla_tarjeta">
@@ -44,8 +47,11 @@
             {% endfor %}
           </tr>
           <tr class="fila_score">
-            <td>Score gross</td>
-            {% for i in range (4,22) %}
+            <td>Score</td>
+            {% for i in range (5,14) %}
+            <td class="score">{{tarjeta[i]}}</td>
+            {% endfor %}
+            {% for i in range (15,24) %}
             <td class="score">{{tarjeta[i]}}</td>
             {% endfor %}
           </tr>
@@ -54,7 +60,10 @@
       </div>
 
       <br>
-      <label for="">Al firmar está avalando el marcador colocado por el jugador</label>
+      <label for="">Al firmar está avalando el score (gross) colocado por el jugador</label>
+      <br>
+      <hr><hr>
+      <br>
       <input type="submit" name="" value="Firmar tarjeta como marcador">
     </form>
   {% endfor %}

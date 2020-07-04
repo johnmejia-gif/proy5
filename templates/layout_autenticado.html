@@ -16,10 +16,12 @@
             <li><a href="/">Home</a></li>
             {% endif %}
             {% if session["name"] != ''%}
-              {% if session["tusu"] == '1'%}
+              {% if session["tusu"] == 1 %}
             <li><a href="{{url_for('iniciojugadores')}}">Inicio</a></li>
               {% else %}
+                {% if session["tusu"] == 2 %}
             <li><a href="{{url_for('inicioadclub')}}">Inicio</a></li>
+                {% endif %}
               {% endif %}
             <li><a href="#">{{session["name"]}}</a>
               <ul class="submenu">

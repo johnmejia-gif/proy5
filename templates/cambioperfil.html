@@ -5,7 +5,10 @@
   <link rel="stylesheet" href="{{url_for('static',filename='CSS/ppal.css')}}"/>
 </head>
 <body>
-
-  <p>{{datusuario}}</p>
+{% for i in range (15)%}
+  <p>{{datusuario[i]}}</p>
+{% endfor %}
 
 {% endblock %}
+
+</body>

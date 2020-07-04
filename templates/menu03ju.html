@@ -29,40 +29,25 @@
       <td>CUPOS DISPONIBLES</td>
     </tr>
     {% for linea in progclubcampo %}
-    {% if linea[8] < ljugadores %}
+    {% if linea[12] < ljugadores %}
     <tr class="filas_nd">
-      <td>{{linea[3]}}</td>
-      <td>{{linea[2]}}</td>
-      <td>{{linea[8]}}</td>
+      <td>{{linea[7]}}</td>
+      <td>{{linea[6]}}</td>
+      <td>{{linea[12]}}</td>
     </tr>
     {% else %}
     <tr class="filas_sd">
-      <td class="celda_boton"><button type="submit" name="tur" value="{{linea[3]}}" onclick="">{{linea[3]}}</button></td>
-      <td>{{linea[2]}}</td>
-      <td>{{linea[8]}}</td>
+      <td class="celda_boton"><button type="submit" name="tur" value="{{linea[7]}}" onclick="">{{linea[7]}}</button></td>
+      <td>{{linea[6]}}</td>
+      <td>{{linea[12]}}</td>
     </tr>
     {% endif %}
     {% endfor %}
   </table>
 </div>
 
-<!-- <h2>Seleccione el turno deseado:</h2>
-{% for linea in progclubcampo%}
-  {% if linea[8] >= ljugadores %}
-    <input type="radio" name="tur" value="{{linea[3]}}" class="turn">{{linea[3]}}<br>
-  {% endif %}
-
-{% endfor %}
-
-    <input type="submit" name="grabar" value="GRABAR"> -->
 </form>
 
-<!--  <form class="" action="{{url_for('inicioagendajugador')}}" method="post">
-    <input type="submit" name="logout" value="VOLVER">
-  </form>
-  <form class="" action="{{url_for('logout')}}" method="post">
-    <input type="submit" name="logout" value="TERMINAR_SESIÓN">
-  </form> -->
 
   <br>
   <li class="enlace"><a href="{{url_for('inicioagendajugador')}}">Volver</a></li>

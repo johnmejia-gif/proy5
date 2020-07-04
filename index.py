@@ -1,4 +1,3 @@
-# import os
 import re
 import flask
 from flask import Flask, render_template, request, session
@@ -14,17 +13,10 @@ from flask import flash
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 
-# DB_URI="mysql+mysqlconnector://{username}{password}:{password}@{hostname}/{databasename}".format(
-#     username="JohnMejia",
-#     password="Teeshot1971",
-#     hostname="JohnMejia.mysql.pythonanywhere-services.com",
-#     databasename="JohnMejia$baseteeshot"
-# )
-
 canchasprserrezuela=[1,2,3,4,7,8]
 canchasclserrezuela=[9,10,11,12,13,14,15,16,17,18]
 
-def existeUsuarios(co):
+def existeUsuarios(co): #revisa la base de datos para saber si el usuario existe, devueve si ó n0
     query=" SELECT nombre FROM usuarios WHERE correo = %s "
     dbconfig = read_db_config()
     try:
@@ -42,7 +34,7 @@ def existeUsuarios(co):
         cursor.close()
         conn.close()
     return encontrado
-def datotalUsuarios(co,tal):
+def datotalUsuarios(co,tal): #recupera un dato (tal) de la base de usuairios del ucuairo (correo)
     dbconfig = read_db_config()
     q1="SELECT "
     q2=" FROM usuarios WHERE correo = %s"
@@ -63,7 +55,7 @@ def datotalUsuarios(co,tal):
         cursor.close()
         conn.close()
     return dato
-def crearUsuario(co,no,ap,cn,id,cl,ac,cf,ind,fr,ty):
+def crearUsuario(co,no,ap,cn,id,cl,ac,cf,ind,fr,ty): #Escribe un usuairo nuevo en la base de datos usuarios
     dbconfig = read_db_config()
     q1="INSERT INTO usuarios (correo,nombre,apellido,contrasena,telefono,club,aval_club,codigo_fed,indice,fecha_registro,tipo) VALUES ("
     q2=")"
@@ -72,22 +64,7 @@ def crearUsuario(co,no,ap,cn,id,cl,ac,cf,ind,fr,ty):
     data=(co,no,ap,cn,id,cl,ac,cf,ind,fr,ty)
     try:
         conn = MySQLConnection(**dbconfig)
-        # if conn.is_connected():
-        #     print('Conexión estabilizada.')
-        # else:
-        #     print('Conexión fallida.')
         cursor = conn.cursor()
-        print(co)
-        print(no)
-        print(ap)
-        print(cn)
-        print(id)
-        print(cl)
-        print(ac)
-        print(cf)
-        print(ind)
-        print(fr)
-        print(ty)
         cursor.execute(query,data)
         print(co)
         if cursor.lastrowid:
@@ -100,7 +77,7 @@ def crearUsuario(co,no,ap,cn,id,cl,ac,cf,ind,fr,ty):
     finally:
         cursor.close()
         conn.close()
-def cambiodatoUsauarios(co,dato,valor):
+def cambiodatoUsauarios(co,dato,valor): #cambia el valor de un dato de la base de datos entrando por correo
     dbconfig = read_db_config()
     q1="UPDATE usuarios SET "
     q2= " = %s WHERE "
@@ -117,89 +94,268 @@ def cambiodatoUsauarios(co,dato,valor):
     finally:
         cursor.close()
         conn.close()
+def todosdatosUsuarios(co): #Devuelve una lista de los datos del ususario co
+    dbconfig = read_db_config()
+    query="SELECT * FROM usuarios WHERE correo = %s"
+    datusuario=[]
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,(co,))
+        try:
+            row=cursor.fetchone()
+            datusuario=row
+        except:
+            dato='errror'
+    except Error as error:
+        print(error)
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+    return datusuario
+def sinavalUsuarios(cl):#Devuelve una lista con los datos de los jugadores que tinen en aval_club = NO
+    dbconfig = read_db_config()
+    query="SELECT * FROM usuarios WHERE club = %s AND aval_club='NO'"
+    sinaval=[]
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,(cl,))
+        try:
+            row=cursor.fetchone()
+            while row is not None:
+                sinaval.append(row)
+                print(row)
+                row = cursor.fetchone()
+        except:
+            dato='errror'
+    except Error as error:
+        print(error)
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+    return sinaval
 
-class Archivo:
-    def __init__(self):
-        self.lista=[]
-    def iniciarArchivo(self):
-        archivo=open('jugadores','a')
-        archivo.close()
-    def escribirArchivo(self):
-        archivo=open('jugadores', 'a')
-        for elemento in self.lista:
-            archivo.write(elemento+"\n")
-        archivo.close()
-    def cambiartodoArchivo(self):
-        archivo=open('jugadores','w')
-        for elemento in self.lista:
-            archivo.write(elemento+"\n")
-        archivo.close()
-    def leerBase(self):
-        archivo=open('jugadores', 'r')
-        linea=archivo.readline()
-        if linea:
-            while linea:
-                if linea[-1] =='\n':
-                    linea = linea[:-1]
-                self.lista.append(linea)
-                linea=archivo.readline()
-        archivo.close()
-    def crearContacto(self,co,no,ap,cn,id,cl,ac,cf,ind,fr,ty):
-        self.lista.append(co+'$*!$'+no+'$*!$'+ap+'$*!$'+cn+'$*!$'+id+'$*!$'+cl+'$*!$'+ac+'$*!$'+cf+'$*!$'+ind+'$*!$'+fr+'$*!$'+ty)
-    def imprimirContacto(self):
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-    def buscarContacto(self,co):
-        encontrado='no'
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if co == arreglo[0]:
-                encontrado='si'
-        return encontrado
-    def datosContacto(self,co):
-        datusuario=[]
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if co == arreglo[0]:
-                datusuario=arreglo
-        return datusuario
-    def datoposContacto(self,co,pos):
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            pos=int(pos)
-            if co == arreglo[0]:
-                return arreglo[pos]
-    def claveContacto(self,co):
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if co == arreglo[0]:
-                return arreglo[3]
-    def nombreContacto(self,co):
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if co == arreglo[0]:
-                return arreglo[1]
-    def cambiodatoArchvio(self,co,pos,valor):#cambia el valor deseado en la possición especificada
-        pos=int(pos)
-        valor=str(valor)
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if co == arreglo[0]:
-                arreglo[pos]=valor
-                print('****fila a eliminar*******: ' +elemento)
-                self.lista.remove(elemento)
-                nuevoarreglo=arreglo[0]
-                largo=len(arreglo)
-                for i in range(1,largo):
-                    nuevoarreglo=nuevoarreglo+'$*!$'+arreglo[i]
-        self.lista.append(nuevoarreglo)
-    def sinavalArchivo(self,cl):#devuelve una lista de jugadores que no tiene aval en el club
-        sinaval=[]
-        for elemento in self.lista:
-            arreglo=elemento.split('$*!$')
-            if arreglo[5]==cl and arreglo[6]=='NO':
-                sinaval.append(arreglo)
-        return sinaval
+def creaAgendaGolf(clu,cam,fec,turnos,fm,tac,numjug):
+    dbconfig = read_db_config()
+    q1="INSERT INTO agenda_golf (club,campo,fecha,frecuencia,tac,turnostotal,hora,turno,ju1,ju2,ju3,ju4,vacios,crea) VAlUES ("
+    q2=")"
+    query=q1+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+","+"%s"+q2
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        tt=len(turnos)
+        tur=0
+        numjug=int(numjug)
+        jugs=[]
+        bloquear= 4 - numjug
+        for i in range (bloquear):
+            jugs.append('club@club.com')
+        for i in range(bloquear,4):
+            jugs.append('vacio')
+        ju1=jugs[0]
+        ju2=jugs[1]
+        ju3=jugs[2]
+        ju4=jugs[3]
+        for i in range(tt):
+            hor=turnos[i]
+            tur=tur+1
+            vac=numjug
+            hoy=date.today()
+            hoy=str(hoy)
+            user=flask.session["username"]
+            crea=hoy+'&/&'+user #en posición 9 se almacena: (fecha actua/usuario:creacion desde cero)
+            data=(clu,cam,fec,fm,tac,tt,hor,tur,ju1,ju2,ju3,ju4,vac,crea)
+            cursor.execute(query,data)
+            conn.commit()
+    except Error as error:
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+def existeAgendaGolf(clu,cam,fec):
+    query=" SELECT hora FROM agenda_golf WHERE club = %s AND campo = %s AND fecha = %s AND turno=1"
+    data=(clu,cam,fec)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        row=cursor.fetchone()
+        if row is not None:
+            encontrado='si'
+            row=cursor.fetchone()
+        else:
+            encontrado='no'
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return encontrado
+def recuperaAgendaGolf(clu,cam,fec):
+    query=" SELECT * FROM agenda_golf WHERE club = %s AND campo = %s AND fecha = %s "
+    data=(clu,cam,fec)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        progclubcampo=cursor.fetchall()
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return progclubcampo
+def recuperaturnoAgendaGolf(clu,cam,fec,tur):
+    lineaturno=[]
+    query=" SELECT * FROM agenda_golf WHERE club = %s AND campo = %s AND fecha = %s AND turno = %s "
+    data=(clu,cam,fec,tur)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        lineaturno=cursor.fetchone()
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return lineaturno
+def cambiadatotalAgendaGolf(clu,cam,fec,tur,dato,valor):
+    dbconfig = read_db_config()
+    q1="UPDATE agenda_golf SET "
+    q2= " = %s WHERE club = %s AND campo=%s AND fecha=%s AND turno=%s"
+    query=q1+dato+q2
+    data=(valor,clu,cam,fec,tur)
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        conn.commit()
+    except Error as error:
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+def turnosjuadorAgendaGolf(usuario,fec):
+    turnosjugador=[]
+    query=" SELECT * FROM agenda_golf WHERE fecha = %s "
+    data=(fec)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,(data,))
+        row=cursor.fetchone()
+        while row is not None:
+            for i in range(8,12):
+                if row[i]==usuario:
+                    turnosjugador.append(row)
+            row = cursor.fetchone()
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return turnosjugador
+
+def creaTarjetasGolf(tarjeta):
+    dbconfig = read_db_config()
+    q1="INSERT INTO tarjetas_golf (fecha, hora, jugador, marcador, campo, h01, h02, h03, h04, h05, h06, h07, h08, h09, ida, h10, h11, h12 ,h13 ,h14 ,h15 ,h16 ,h17 ,h18 ,vuelta ,total ,firma_jugador) VALUES ("
+    q2="%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    query=q1+q2
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,tarjeta)
+        conn.commit()
+    except Error as error:
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+def existeTarjetasGolf(fec,hora,co):
+    query=" SELECT campo FROM tarjetas_golf WHERE fecha = %s AND hora = %s AND jugador = %s "
+    data=(fec,hora,co)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        row=cursor.fetchone()
+
+        if row is not None:
+            encontrado='si'
+            row=cursor.fetchone()
+        else:
+            encontrado='no'
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return encontrado
+def marcadorTarjetasGolf(mc):
+    query="SELECT * FROM tarjetas_golf WHERE marcador = %s and fecha= %s"
+    dbconfig = read_db_config()
+    asignadomarcador='no'
+    tars=[]
+    fec=date.today()
+    fec=str(fec)
+    data=(mc,fec)
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        row=cursor.fetchone()
+        while row is not None:
+            asignadomarcador='si'
+            tars.append(row)
+            row=cursor.fetchone()
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    respuesta=[asignadomarcador,tars]
+    return respuesta
+def cambiadatotalTarjetaGolf(fec,hora,co,dato,valor):
+    dbconfig = read_db_config()
+    q1="UPDATE tarjetas_golf SET "
+    q2= " = %s WHERE fecha = %s AND hora=%s AND jugador=%s "
+    query=q1+dato+q2
+    data=(valor,fec,hora,co)
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        conn.commit()
+    except Error as error:
+        dato='errror'
+    finally:
+        cursor.close()
+        conn.close()
+def recuperaTarjetasGolf(fec,cam):
+    tarjetas=[]
+    query=" SELECT * FROM tarjetas_golf WHERE fecha= %s AND campo = %s "
+    data=(fec,cam)
+    dbconfig = read_db_config()
+    try:
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute(query,data)
+        tarjetas=cursor.fetchall()
+    except Error as error:
+        print(error)
+    finally:
+        cursor.close()
+        conn.close()
+    return tarjetas
 
 class Campos:
     def __init__(self):
@@ -349,7 +505,6 @@ class Agenda:
             if existe=='si':
                 turnosjugador.append(filaagenda)
         return turnosjugador
-
 class Agendatenis:
     def __init__(self):
         self.lista=[]
@@ -377,87 +532,6 @@ class Agendatenis:
         archivo.close()
 
 
-class Tarjetas:
-    def __init__(self):
-        self.lista=[]
-    def iniciarTarjetas(self):
-        archivo=open('tarjetas','a')
-        archivo.close()
-    def leerTarjetas(self):
-        archivo=open('tarjetas','r')
-        linea=archivo.readline()
-        if linea:
-            while linea:
-                if linea[-1] == '\n':
-                    linea = linea[:-1]
-                self.lista.append(linea)
-                linea=archivo.readline()
-    def escribirTarjetas(self):#para adicionar una tarjeta en el archivo de tarjetas
-        archivo=open('tarjetas','a')
-        for elemento in self.lista:
-            archivo.write(elemento+"\n")
-        archivo.close()
-    def grabarTarjetas(self):#reescribe el archivo tarjetas
-        archivo=open('tarjetas','w')
-        for elemento in self.lista:
-            archivo.write(elemento+"\n")
-        archivo.close()
-    def buscarTarjetas(self,fec,co,hora):
-        fec=str(fec)
-        encontrado='no'
-        for elemento in self.lista:
-            arreglo=elemento.split('$')
-            if fec==arreglo[0]:
-                if co==arreglo[1]:
-                    if hora==arreglo[24]:
-                        encontrado='si'
-        return encontrado
-    def creaTarjetas(self,fec,co,mc,cam,score,hora):
-        fec=str(fec)
-        pos=[fec,co,mc,cam]
-        for i in range(0,18):
-            pos.append(score[i])
-        pos.append('si')
-        pos.append('no')
-        registro=pos[0]
-        for j in range(1,24):
-            registro=registro+'$'+pos[j]
-        registro=registro+'$'+hora
-        self.lista.append(registro)
-    def marcadorTarjetas(self,mc):#deuvelve respuesta para saber [está asignado como marcador, lista de asignaciones]
-        asignadomarcador='no'
-        tars=[]
-        fec=date.today()
-        fec=str(fec)
-        for elemento in self.lista:
-            arreglo=elemento.split('$')
-            if fec==arreglo[0]:
-                if mc==arreglo[2]:
-                    asignadomarcador='si'
-                    tars.append(arreglo)
-        respuesta=[asignadomarcador,tars]
-        return respuesta
-    def avalarTarjetas(self,fec,co,hora):
-        for elemento in self.lista:
-            arreglo=elemento.split('$')
-            if fec==arreglo[0]:
-                if co==arreglo[1]:
-                    if hora==arreglo[24]:
-                        arreglo[23]='si'
-                        self.lista.remove(elemento)
-                        nuevatarjeta=arreglo[0]
-                        for i in range(1,25):
-                            nuevatarjeta=nuevatarjeta+'$'+arreglo[i]
-        self.lista.append(nuevatarjeta)
-    def verTarjetas(self,fec,cam):#devuelve una lista con las tarjetas del clbu en la fecha escogida
-        tarjetas=[]
-        for elemento in self.lista:
-            arreglo=elemento.split('$')
-            if fec==arreglo[0]:
-                if cam==arreglo[3]:
-                    tarjetas.append(arreglo)
-        return tarjetas
-
 def TotalTurnos(hi,mi,fm,hf,mf,txr,desa):#devuelve una lista con [numero de turnos antes del cruce, turnos en total del día]
     hi=int(hi)
     mi=float(mi)
@@ -484,7 +558,6 @@ def TotalTurnos(hi,mi,fm,hf,mf,txr,desa):#devuelve una lista con [numero de turn
     turnostotal=((realrondas-1)*turnosantescruce)+turnosad
     turnos=[turnosantescruce ,turnostotal]
     return turnos
-
 def generahorarios(hi,mi,fm,hf,mf,turnos): #Entrega los horaios de los turnos en una lista (decimal)
     tac=int(turnos[0])
     tt=int(turnos[1])
@@ -510,7 +583,6 @@ def generahorarios(hi,mi,fm,hf,mf,turnos): #Entrega los horaios de los turnos en
         horasagenda.append(inicioturno)
         inicioturno=inicioturno+(fm/60)
     return horasagenda
-
 def ConvierteTurnoenHorarios(turnos,): #convierte los turnos de decimal a sexadecimal para mostrar en una lista
     devuelve=[]
     for turnito in turnos:
@@ -530,7 +602,6 @@ def ConvierteTurnoenHorarios(turnos,): #convierte los turnos de decimal a sexade
         horaturno=(enteroturnito+":"+minuto)
         devuelve.append(horaturno)
     return devuelve
-
 def InsertaCruces(turnossexa,tur): #inserta los cruces para mostrar los horarios
     mostrarturnos=[]
     if tur[0] != 0:
@@ -555,7 +626,6 @@ def InsertaCruces(turnossexa,tur): #inserta los cruces para mostrar los horarios
         mensaje='NO HAY AGENDA DISPONIBLE'
         mostrarturnos.append(mensaje)
         return mostrarturnos
-
 def GeneraClave():
     clavej='asdfghjklqwertyuiopzxcvbnm1203456789AZQWSXCDERFVBGTYHNMJUIKLOP'
     c1=random.choice(clavej)
@@ -604,8 +674,6 @@ def autenticar():
         flask.session["logged_in"]=False
         usuario = flask.request.form["usuario"]
         contrasena = flask.request.form["contrasena"]
-        archivo=Archivo()
-        archivo.leerBase()
         encontrado=existeUsuarios(co=usuario) #devuelve si ó no , encontró el usuario?
         if encontrado=='si':
             contrasenabase=datotalUsuarios(co=usuario,tal='contrasena')
@@ -698,7 +766,6 @@ def terminaregistro():
         if encontrado=='si':
             return render_template('error_registro.html', error='****ERROR****    Usuario Ya Registrado en TEE-SHOT')
         else:
-            # archivo2=Archivo()
             crearUsuario(co=usuario,no=nombre,ap=apellido,cn=contrasegna,id=identificacion,cl=club,ac=aval_club,cf=cod_fedegolf,ind=indice_fedegolf,fr=fecha,ty=tipo_usuario)
             msg = Message('Gracias por inscribirse en TEE-SHOT', sender = app.config['MAIL_USERNAME'], recipients=[usuario])
             msg.html = render_template('mail01.html', nombre=nombre,usuario=usuario, contrasegna=contrasegna)
@@ -709,10 +776,8 @@ def terminaregistro():
 
 @app.route('/autentication/user_profile', methods=["GET","POST"])
 def perfilusuario():
-    archivo=Archivo()
     usuario=flask.session["username"]
-    archivo.leerBase()
-    datusuario=archivo.datosContacto(co=usuario)
+    datusuario=todosdatosUsuarios(co=usuario)
     return render_template('cambioperfil.html',datusuario=datusuario)
 
 @app.route('/autentication/change_password', methods=["GET","POST"])
@@ -749,25 +814,19 @@ def realizacambiocontrasegna():
 
 @app.route('/players/cards', methods=["GET","POST"])
 def tarjetasjugador():#juador define quien va a ser su marcador en la tajeta
-    archivo1=Archivo()
-    archivo2=Agenda()
-    archivo2.leerAgenda()
     fecha=date.today()
     usuario=flask.session["username"]
-    turnosjugador=archivo2.turjugAgenda(usuario=usuario,fecha=fecha)
+    turnosjugador=turnosjuadorAgendaGolf(usuario=usuario,fec=fecha)
     lturnosjugador=len(turnosjugador)
-    clubjugado=[]
-    colegas=[]
     if lturnosjugador !=0:
         clubjugado=[]
-        colegas=[]
+        colegas=['club@club.com']
         horas=[]
         for turno in turnosjugador:
-            clubcamfe=turno[0].split('&/&')
-            clubjugado.append(clubcamfe[0])
-            hora=turno[2]
+            clubjugado.append(turno[0])
+            hora=turno[6]
             horas.append(hora)
-            for i in range (4,8):
+            for i in range (8,12):
                 if turno[i]!=usuario:
                     colegas.append(turno[i])
         return render_template('menuju05.html',clubjugado=clubjugado,colegas=colegas,turnosjugador=turnosjugador,fecha=fecha,horas=horas)
@@ -777,17 +836,14 @@ def tarjetasjugador():#juador define quien va a ser su marcador en la tajeta
         return render_template('res_pos_jug_autentic.html')
 
 @app.route('/players/cards/send', methods=["GET","POST"])
-def tarjetasjugadorsend():#Jogador llene los escores de la tajeta y la envíe para qu ela firme el marcador
+def tarjetasjugadorsend():#Jugador llene los escores de la tajeta y la envíe para que la firme el marcador
     if(flask.request.method=="POST"):
         club=flask.request.form["club"]
         marcador=flask.request.form["marcador"]
         hora=flask.request.form["hora"]
         co=flask.session["username"]
         hoy=date.today()
-        archivo=Tarjetas()
-        archivo.iniciarTarjetas()
-        archivo.leerTarjetas()
-        encontrado=archivo.buscarTarjetas(fec=hoy,co=co,hora=hora)
+        encontrado=existeTarjetasGolf(fec=hoy,hora=hora,co=co)
         if encontrado=='no':
             return render_template('menuju06.html',club=club,marcador=marcador,hoy=hoy,hora=hora)
         else:
@@ -804,36 +860,58 @@ def rectarjetajugador():#graba en la base de datos la tarjeta envida por el juga
         mc=flask.request.form["marcador"]
         cam=flask.request.form["club"]
         hora=flask.request.form["hora"]
-        score=[]
-        for i in range(1,19):
-            adicion=str(i)
-            hoyo='hoyo'+adicion
-            golpes=flask.request.form[hoyo]
-            score.append(golpes)
-        archivo=Tarjetas()
-        archivo.iniciarTarjetas()
-        archivo.leerTarjetas()
-        archivo2=Tarjetas()
-        archivo2.creaTarjetas(fec=fec,co=co,mc=mc,cam=cam,score=score,hora=hora)
-        archivo2.escribirTarjetas()
-        flash('Tarjeta enviada para firma del marcador')
-        return render_template("res_pos_jug_autentic.html")
+        encontrado=existeTarjetasGolf(fec=fec,hora=hora,co=co)
+        if encontrado=='no':
+            tarjeta=[]
+            tarjeta.append(fec)
+            tarjeta.append(hora)
+            tarjeta.append(co)
+            tarjeta.append(mc)
+            tarjeta.append(cam)
+            ida=0
+            for i in range(1,10):
+                adicion=str(i)
+                hoyo='hoyo'+adicion
+                golpes=flask.request.form[hoyo]
+                tarjeta.append(golpes)
+                golpes=int(golpes)
+                ida=ida+golpes
+            tarjeta.append(ida)
+            vuelta=0
+            for i in range(10,19):
+                adicion=str(i)
+                hoyo='hoyo'+adicion
+                golpes=flask.request.form[hoyo]
+                tarjeta.append(golpes)
+                golpes=int(golpes)
+                vuelta=vuelta+golpes
+            tarjeta.append(vuelta)
+            total=ida+vuelta
+            tarjeta.append(total)
+            tarjeta.append(co)
+            creaTarjetasGolf(tarjeta=tarjeta)
+            ida=str(ida)
+            vuelta=str(vuelta)
+            total=str(total)
+            flash('Tarjeta enviada para firma del marcador. Ida= '+ida+ ' Vuelta= '+vuelta+ ' Total= ' +total)
+            return render_template("res_pos_jug_autentic.html")
+        else:
+            flash('Ya se envió la tajeta')
+            return render_template("res_pos_jug_autentic.html")
+
     else:
         return render_template("autenticacion.html")
 
 @app.route('/players/cards/send/record/validate', methods=["GET","POST"])
 def tarjetascolega():
     mc=flask.session["username"]
-    archivo=Tarjetas()
-    archivo.leerTarjetas()
-    respuesta=archivo.marcadorTarjetas(mc=mc)
+    respuesta=marcadorTarjetasGolf(mc=mc)
     asignadomarcador=respuesta[0]
-
     if asignadomarcador=='si':
         tars0=respuesta[1]
         tars=[]
         for tarjeta in tars0:
-            if tarjeta[23]=='no':
+            if tarjeta[27]==None:
                 tars.append(tarjeta)
                 mensaje=''
         if tars==[]:
@@ -852,11 +930,12 @@ def tarjetafirmada():
     fec=flask.request.form["fec"]
     co=flask.request.form["co"]
     hora=flask.request.form["hora"]
-    archivo=Tarjetas()
-    archivo.leerTarjetas()
-    archivo.avalarTarjetas(fec=fec,co=co,hora=hora)
-    archivo.grabarTarjetas()
-    del archivo
+    print(fec)
+    print(hora)
+    print(co)
+    print(mc)
+    cambiadatotalTarjetaGolf(fec=fec,hora=hora,co=co,dato='firma_marcador',valor=mc)
+
     flash('La tarjeta avalada por usted, ha sido enviada con exito')
     return render_template('res_pos_jug_autentic.html')
 
@@ -873,116 +952,6 @@ def formturnos():
         fecha1=hoy+timedelta(days=1)
         fecha2=hoy+timedelta(days=10)
         return render_template("menuac02.html",club=club, campos=campos, largo=largo, fecha1=fecha1, fecha2=fecha2)
-
-@app.route('/view_agenda_parameters', methods=["GET","POST"])
-def vaparameters(): #Direcciona al administrador del club para que pueda ver agenda de alguno de sus campos
-    usuario=flask.session["username"]
-    club=flask.session["course"]
-    course=Campos()
-    course.leerCampos()
-    campos=course.buscarCampos(campo=club)
-    campo1=campos[1]
-    largo=len(campos)
-    del course
-    return render_template("menuac04.html",club=club,campos=campos,largo=largo)
-
-@app.route('/view_agenda_parameters/visulization', methods=["GET","POST"])
-def clubveragenda(): #El club puede ver la agenda en un día específico
-    if(flask.request.method=="POST"):
-        club=flask.session["course"]
-        campo=flask.request.form["campo"]
-        fecha=flask.request.form["fecha"]
-        archivo=Agenda()
-        archivo.leerAgenda()
-        existeagenda=archivo.consultaclubcampoAgenda(clu=club,cam=campo,fec=fecha)
-        if existeagenda==True:
-            progclubcampo=archivo.recuperaclubcampoAgenda(clu=club,cam=campo,fec=fecha)
-
-            return render_template("menuac05.html", club=club,campo=campo,fecha=fecha,progclubcampo=progclubcampo)
-        else:
-            mensajeerror='No existe agenda para el día seleccionado'
-            return render_template("menuac_error05.html", mensajeerror=mensajeerror)
-    else:
-        return render_template("autenticacion.html")
-
-@app.route('/view_agenda_parameters/visualization/changes', methods=["GET","POST"])
-def clubcambioagenda():#procedimiento para que el club escriba los cambios de algún turno de la agenda
-    if(flask.request.method=="POST"):
-        club=flask.session["course"]
-        campo=flask.request.form["campo"]
-        fecha=flask.request.form["fecha"]
-        turno=flask.request.form["turno"]
-        archivo=Agenda()
-        archivo.leerAgenda()
-        filaagenda=archivo.recuperaTurnoAgenda(clu=club,cam=campo,fec=fecha,tur=turno)
-        del archivo
-        return render_template("menuac06.html",filaagenda=filaagenda,campo=campo,fecha=fecha,turno=turno)
-
-    else:
-        return render_template("autenticacion.html")
-
-@app.route('/view_agenda_parameters/visualization/changes/record', methods=["GET","POST"])
-def clubrealizacambioagenda(): #procedimiento apra grabar los cambios definidos pór el club para algún truno de la agenda
-    if(flask.request.method=="POST"):
-        club=flask.session["course"]
-        campo=flask.request.form["campo"]
-        fecha=flask.request.form["fecha"]
-        turno=flask.request.form["turno"]
-        jug01=flask.request.form["jug01"]
-        jug02=flask.request.form["jug02"]
-        jug03=flask.request.form["jug03"]
-        jug04=flask.request.form["jug04"]
-        jugadores=[jug01,jug02,jug03,jug04]
-        archivo=Archivo()
-        archivo.leerBase()
-        mensajeerror=''
-        for jugador in jugadores:
-            if jugador != '':
-                if jugador !='vacio':
-                    existejug=archivo.buscarContacto(co=jugador)
-                    pr=str(existejug)
-                    if existejug=='no':
-                        mensajeerror='Solo puede inscribir usuarios registrados en TEE-SHOT, '+jugador+' no está registrado en TEE-SHOT. *** Invítalo a inscribirse ***'
-        del archivo
-        if mensajeerror == '':
-            archivo1=Agenda()
-            archivo1.leerAgenda()
-            progclubcampo=archivo1.recuperaclubcampoAgenda(clu=club,cam=campo,fec=fecha)
-            filaagenda=archivo1.recuperaTurnoAgenda(clu=club,cam=campo,fec=fecha,tur=turno)
-            p1=filaagenda[0] #lista de agendamiento que se va a modificar
-            pjug=4
-            p1[8]=0
-            for i in range(4): #actualza jugadores respecto a la solicitud del club y lo que había en la agenda.
-                if jugadores[i]=='':
-                    jugadores[i]=p1[pjug]
-                if jugadores[i]=='vacio':
-                    p1[8]=p1[8]+1 #actualiza cuántos cupos quedan
-                pjug=pjug+1
-            if p1[8] > 0:
-                nuevojugadores=[]
-                for jugador in jugadores:
-                    if jugador !='vacio':
-                        nuevojugadores.append(jugador)
-                for i in range(p1[8]):
-                    nuevojugadores.append('vacio')
-                for i in range(4):
-                    jugadores[i]=nuevojugadores[i]
-            j=0
-            for i in range(4,8):
-                p1[i]=jugadores[j]
-                j=j+1
-            ljugadores=4
-            archivo1.cambiaturnoAgenda(p1=p1,club=club,campo=campo,fecha=fecha,tur=turno,ljugadores=ljugadores)
-            archivo1.iniciarAgenda()
-            archivo1.grabarturnoAgenda()
-
-            return render_template("menuac07.html",jugadores=jugadores,club=club,campo=campo,fecha=fecha,turno=turno)
-        else:
-            return render_template("menuac07_error.html",mensajeerror=mensajeerror)
-
-
-    else:
-        return render_template("autenticacion.html")
 
 @app.route('/creating_agneda/view01', methods=["GET","POST"])
 def clubcreaagendadia():#CREAR DIA Agenda para un campo específico
@@ -1030,28 +999,125 @@ def clubcreaagendadia():#CREAR DIA Agenda para un campo específico
         lmt=len(mostrarturnos)
         tac=tur[0]
         tt=tur[1]
-        archivoagenda=Agenda()
-        archivoagenda.iniciarAgenda()
-        archivoagenda.leerAgenda()
-        checkagenda=archivoagenda.consultaclubcampoAgenda(clu=clu,cam=cam,fec=fec) #comprueba si existe agenda para ese club,campo y fecha
-        if checkagenda == False:
+        checkagenda=existeAgendaGolf(clu=clu,cam=cam,fec=fec) #comprueba si existe agenda para ese club,campo y fecha
+        if checkagenda == 'no':
             for i in range(1,len(campos)):
                 archivoprov=Agenda()
                 cam=campos[i]
-                archivoprov.adicioncampoAgenda(clu=clu,cam=cam,fec=fec,turnos=turnossexa,hi=hi,mi=mi,fm=fm,hf=hf,mf=mf,tac=tac,tt=tt,numjug=numjug)
-                archivoprov.escribirAgenda()
+                creaAgendaGolf(clu=clu,cam=cam,fec=fec,turnos=turnossexa,fm=fm,tac=tac,numjug=numjug)
             return render_template("menu03ac.html", f1=fec, h1=hora_apertura, h2=hora_cierre,fr=frecuencia,tur=tur,turnos=mostrarturnos,campos=campos,club=club,lcampos=lcampos,lmt=lmt,numjug=numjug)
         else:
             return render_template("menu03ac_error.html", f1=fec,club=club,mensajeerror='YA HAY AGENDA PROGRAMADA PARA LA FECHA SELECCIONADA')
     else:
         return render_template("autenticacion.html")
 
+@app.route('/view_agenda_parameters', methods=["GET","POST"])
+def vaparameters(): #Direcciona al administrador del club para que pueda ver agenda de alguno de sus campos
+    usuario=flask.session["username"]
+    club=flask.session["course"]
+    course=Campos()
+    course.leerCampos()
+    campos=course.buscarCampos(campo=club)
+    campo1=campos[1]
+    largo=len(campos)
+    del course
+    return render_template("menuac04.html",club=club,campos=campos,largo=largo)
+
+@app.route('/view_agenda_parameters/visulization', methods=["GET","POST"])
+def clubveragenda(): #El club puede ver la agenda en un día específico
+    if(flask.request.method=="POST"):
+        club=flask.session["course"]
+        campo=flask.request.form["campo"]
+        fecha=flask.request.form["fecha"]
+        existeagenda=existeAgendaGolf(clu=club,cam=campo,fec=fecha)
+        if existeagenda=='si':
+            progclubcampo=recuperaAgendaGolf(clu=club,cam=campo,fec=fecha)
+
+            return render_template("menuac05.html", club=club,campo=campo,fecha=fecha,progclubcampo=progclubcampo)
+        else:
+            mensajeerror='No existe agenda para el día seleccionado'
+            return render_template("menuac_error05.html", mensajeerror=mensajeerror)
+    else:
+        return render_template("autenticacion.html")
+
+@app.route('/view_agenda_parameters/visualization/changes', methods=["GET","POST"])
+def clubcambioagenda():#procedimiento para que el club escriba los cambios de algún turno de la agenda
+    if(flask.request.method=="POST"):
+        club=flask.session["course"]
+        campo=flask.request.form["campo"]
+        fecha=flask.request.form["fecha"]
+        turno=flask.request.form["turno"]
+        filaagenda=recuperaturnoAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno)
+        return render_template("menuac06.html",filaagenda=filaagenda,campo=campo,fecha=fecha,turno=turno)
+
+    else:
+        return render_template("autenticacion.html")
+
+@app.route('/view_agenda_parameters/visualization/changes/record', methods=["GET","POST"])
+def clubrealizacambioagenda(): #procedimiento para grabar los cambios definidos pór el club para algún truno de la agenda
+    if(flask.request.method=="POST"):
+        club=flask.session["course"]
+        co=flask.session["username"]
+        campo=flask.request.form["campo"]
+        fecha=flask.request.form["fecha"]
+        turno=flask.request.form["turno"]
+        jug01=flask.request.form["jug01"]
+        jug02=flask.request.form["jug02"]
+        jug03=flask.request.form["jug03"]
+        jug04=flask.request.form["jug04"]
+        jugadores=[jug01,jug02,jug03,jug04]
+        mensajeerror=''
+        for jugador in jugadores:
+            if jugador != '':
+                if jugador !='vacio':
+                    existejug=existeUsuarios(co=jugador)
+                    if existejug=='no':
+                        mensajeerror='Solo puede inscribir usuarios registrados en TEE-SHOT, '+jugador+' no está registrado en TEE-SHOT. *** Invítalo a inscribirse ***'
+        if mensajeerror == '':
+            filaagenda=recuperaturnoAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno)
+            p1=filaagenda #lista de agendamiento que se va a modificar
+            pjug=8
+            vacios=0
+            for i in range(4): #actualza jugadores respecto a la solicitud del club y lo que había en la agenda.
+                if jugadores[i]=='':
+                    jugadores[i]=p1[pjug]
+                if jugadores[i]=='vacio':
+                    vacios=vacios+1 #actualiza cuántos cupos quedan
+                pjug=pjug+1
+            if vacios > 0:
+                nuevojugadores=[]
+                for jugador in jugadores:
+                    if jugador !='vacio':
+                        nuevojugadores.append(jugador)
+                for i in range(vacios):
+                    nuevojugadores.append('vacio')
+                for i in range(4):
+                    jugadores[i]=nuevojugadores[i]
+            hoy=date.today()
+            hoy=str(hoy)
+            huella=str(p1[14])
+            if len(huella)<100:
+                huella=huella+hoy+'&/&'+co+'$/$'
+            else:
+                huella=hoy+'&/&'+co+'$/$'
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='ju1',valor=jugadores[0])
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='ju2',valor=jugadores[1])
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='ju3',valor=jugadores[2])
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='ju4',valor=jugadores[3])
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='vacios',valor=vacios)
+            cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=turno,dato='huella',valor=huella)
+            return render_template("menuac07.html",jugadores=jugadores,club=club,campo=campo,fecha=fecha,turno=turno)
+        else:
+            return render_template("menuac07_error.html",mensajeerror=mensajeerror)
+
+
+    else:
+        return render_template("autenticacion.html")
+
 @app.route('/recognition_playerbyclub',methods=["GET","POST"])
 def avalarjugadoresclub(): #inicia el aval del club para los jugadores del mismo club
-    archivo=Archivo()
-    archivo.leerBase()
     club=flask.session["course"]
-    sinaval=archivo.sinavalArchivo(cl=club)
+    sinaval=sinavalUsuarios(cl=club)
     return render_template('menuac10.html',sinaval=sinaval)
 
 @app.route('/recognition_playerbyclub/tramit',methods=["GET","POST"])
@@ -1068,28 +1134,21 @@ def inicioagendajugador():
     hora=ya.hour
     minuto=ya.minute
     if flask.session['course']=='Serrezuela':
-        if hora<20 and hora>=12:
-            archivo=Archivo()
-            archivo.leerBase()
-            pos=6
+        if hora<24 and hora>=1: #hora en el servidor donde está alojada la aplicación  HORASERVIDOR de 12 a 20
             co=flask.session["username"]
-            aval=archivo.datoposContacto(co=co,pos=pos)
+            aval=datotalUsuarios(co=co,tal="aval_club")
+            club=flask.session["course"]
             if aval == 'SI':
-                club=flask.session["course"]
                 return render_template("menu01ju.html", club=club)
             else:
-                club=flask.session["course"]
                 flash('No tiene aval de del club '+club+' para pedir turnos')
                 return render_template('res_pos_jug_autentic.html')
         else:
             flash('SERREZUELA definió que el horario para ingresar a seleccionar turno es de 7 am a 3 pm')
             return render_template('res_pos_jug_autentic.html')
     else:
-        archivo=Archivo()
-        archivo.leerBase()
-        pos=6
         co=flask.session["username"]
-        aval=archivo.datoposContacto(co=co,pos=pos)
+        aval=datotalUsuarios(co=co,tal="aval_club")
         if aval == 'SI':
             club=flask.session["course"]
             return render_template("menu01ju.html", club=club)
@@ -1108,23 +1167,21 @@ def rejugrupo(): #revisa la viavilidad de los jugadores para inscribirse
         jug03=flask.request.form["jug03"]
         jug04=flask.request.form["jug04"]
         club=flask.request.form["clu"]
-        archivo=Archivo()
-        archivo.leerBase()
         error_jugador=''
         if jug02 != '':
-            existejug2=archivo.buscarContacto(co=jug02)
+            existejug2=existeUsuarios(co=jug02)
             if existejug2=='si':
                 jugadores.append(jug02)
             else:
                 error_jugador='Solo puede inscribir usuarios registrados en TEE-SHOT, '+jug02+' No está registrado. *** invítalo a inscribirse ***'
         if jug03 != "":
-            existejug3=archivo.buscarContacto(co=jug03)
+            existejug3=existeUsuarios(co=jug03)
             if existejug3=='si':
                 jugadores.append(jug03)
             else:
                 error_jugador='Solo puede inscribir usuarios registrados en TEE-SHOT, '+jug03+' No está registrado. *** invítalo a inscribirse ***'
         if jug04 != "":
-            existejug4=archivo.buscarContacto(co=jug04)
+            existejug4=existeUsuarios(co=jug04)
             if existejug4=='si':
                 jugadores.append(jug04)
             else:
@@ -1167,21 +1224,17 @@ def moptjug(): # mostrar opciones para que el jugador defina un turno
         listajugadores=re.findall("[a-zA-Z0-0]\S+@\S+[a-zA-Z]",jugadores)
         print('********jugadores*********')
         print(listajugadores)
-        archivo1=Agenda()
-        archivo1.iniciarAgenda()
-        archivo1.leerAgenda()
-        consulta1=archivo1.consultaclubcampoAgenda(clu=club,cam=campo,fec=fecha)
-        cons=str(consulta1)
-        if consulta1 == True:
+        consulta1=existeAgendaGolf(clu=club,cam=campo,fec=fecha)
+        if consulta1 == 'si':
             contador=0
             for jugador in listajugadores:
-                turnosjugador=archivo1.turjugAgenda(usuario=jugador,fecha=fecha)
+                turnosjugador=turnosjuadorAgendaGolf(usuario=jugador,fec=fecha)
                 if turnosjugador!=[]:
                     mensajerapido=jugador+' ya tiene turno para la fecha seleccionada'
                     contador=contador+1
             if contador==0:
-                progclubcampo=archivo1.recuperaclubcampoAgenda(clu=club, cam=campo,fec=fecha)
-                del archivo1
+                progclubcampo=recuperaAgendaGolf(clu=club, cam=campo,fec=fecha)
+                ljugadores=int(ljugadores)
                 return render_template("menu03ju.html",fecha=fecha,campo=campo,jugadores=jugadores,ljugadores=ljugadores,club=club,consulta1=consulta1,progclubcampo=progclubcampo)
             else:
                 flash(mensajerapido)
@@ -1195,39 +1248,48 @@ def moptjug(): # mostrar opciones para que el jugador defina un turno
 def brabagenjugador(): #grabar la opción decidida por el jugador en la agenda del club
     if(flask.request.method == "POST"):
         fecha=flask.request.form["fecha"]
+        co=flask.session["username"]
         campo=flask.request.form["campo"]
         jugadores=flask.request.form["jugadores"]
         ljugadores=flask.request.form["ljugadores"]
         club=flask.request.form["club"]
         turno_sel=flask.request.form["tur"]
         listajugadores=re.findall("[a-zA-Z0-0]\S+@\S+[a-zA-Z]",jugadores)
-        archivo1=Agenda()
-        archivo1.leerAgenda()
         contador=0
         for jugador in listajugadores:
-            turnosjugador=archivo1.turjugAgenda(usuario=jugador,fecha=fecha)
+            turnosjugador=turnosjuadorAgendaGolf(usuario=jugador,fec=fecha)
             if turnosjugador!=[]:
                 mensajerapido=jugador+' ya tiene turno para la fecha seleccionada'
                 contador=contador+1
         if contador==0:
-            tur=turno_sel
-            progclubcampo=archivo1.recuperaclubcampoAgenda(clu=club,cam=campo,fec=fecha)
-            filaagenda=archivo1.recuperaTurnoAgenda(clu=club,cam=campo,fec=fecha,tur=tur)
-            p1=filaagenda[0]
-            p1[8]=int(p1[8]) #cupos
+            tur=int(turno_sel)
+            filaagenda=recuperaturnoAgendaGolf(clu=club,cam=campo,fec=fecha,tur=tur)
+            p1=filaagenda
+            cupos=int(p1[12]) #cupos
             ljugadores=int(ljugadores) #cuántos voy a inscribir
-            if ljugadores <= p1[8]: #si voy a inscribir menos que los cupos disponibles
-                inicial=4+(4-(p1[8]))
+            if ljugadores <= cupos: #si voy a inscribir menos que los cupos disponibles
+                inicial=8+(4-(cupos))
                 final=inicial+(ljugadores)
-                j=0
-                for i in range(inicial,final):
-                    p1[i]=listajugadores[j]
-                    j=j+1
-                p1[8]=p1[8] - ljugadores
-                archivo1.cambiaturnoAgenda(p1=p1,club=club,campo=campo,fecha=fecha,tur=tur,ljugadores=ljugadores)
-                archivo1.iniciarAgenda()
-                archivo1.grabarturnoAgenda()
-                #************ colocar funcion para envío de correos de confirmación
+                cupos=cupos - ljugadores
+                for i in range (ljugadores):
+                    digito=inicial-7+i
+                    digito=str(digito)
+                    player='ju'+digito
+                    cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=tur,dato=player,valor=listajugadores[i])
+                cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=tur,dato='vacios',valor=cupos)
+                hoy=date.today()
+                hoy=str(hoy)
+                huella=str(p1[14])
+                if len(huella)<100:
+                    huella=huella+hoy+'&/&'+co+'$/$'
+                else:
+                    huella=hoy+'&/&'+co+'$/$'
+                cambiadatotalAgendaGolf(clu=club,cam=campo,fec=fecha,tur=tur,dato='huella',valor=huella)
+                titulo='Confirmación de turnno TEE-SHOT__'+club+' '+fecha
+#***************ACTIVAR EN PRODUCCION SOLAMENTE
+                # msg = Message(titulo, sender = app.config['MAIL_USERNAME'], recipients=listajugadores)
+                # msg.html = render_template('mail04.html',clu=club,cam=campo,fec=fecha,usuario=co,filaagenda=filaagenda)
+                # mail.send(msg)
                 return render_template("menu04ju.html",fecha=fecha,campo=campo,jugadores=jugadores,ljugadores=ljugadores,club=club,turno_sel=turno_sel,filaagenda=filaagenda)
             else:
                 mensajeerror='No hay cupos disponibles en la selección, por favor vuelva escoger un horaio deseado'
@@ -1247,25 +1309,19 @@ def vertarjetasclub():
     cam=flask.session["course"]
     fecha=flask.request.form["fecha"]
     fecha=str(fecha)
-    archivo=Archivo()
-    archivo.leerBase()
-    archivo2=Tarjetas()
-    archivo2.iniciarTarjetas()
-    archivo2.leerTarjetas()
-    tarjetas=archivo2.verTarjetas(fec=fecha,cam=cam)
+    tarjetas=recuperaTarjetasGolf(fec=fecha,cam=cam)
     listatarjetas=[]
     for tarjeta in tarjetas:
-        nombre=archivo.datoposContacto(co=tarjeta[1],pos=1)
-        apellido=archivo.datoposContacto(co=tarjeta[1],pos=2)
-        cf=archivo.datoposContacto(co=tarjeta[1],pos=7)
+        nombre=datotalUsuarios(co=tarjeta[2],tal='nombre')
+        apellido=datotalUsuarios(co=tarjeta[2],tal='apellido')
+        cf=datotalUsuarios(co=tarjeta[2],tal='codigo_fed')
         card=[nombre,apellido,cf]
-        for i in range(4,22):
+        for i in range(5,14):
             card.append(tarjeta[i])
-        card.append(tarjeta[1])
-        if tarjeta[23]=='si':
-            card.append(tarjeta[2])
-        else:
-            card.append('')
+        for i in range(15,24):
+            card.append(tarjeta[i])
+        card.append(tarjeta[26])
+        card.append(tarjeta[27])
         listatarjetas.append(card)
 
     return render_template('menuac09.html',fecha=fecha,tarjetas=listatarjetas)
